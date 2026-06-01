@@ -1,0 +1,135 @@
+# 📦 Enterprise Inventory & Order Management System
+
+A production-grade, highly aesthetic full-stack application built with:
+- **Backend API**: **FastAPI (Python)** using **SQLAlchemy ORM** and **Pydantic v2** validation.
+- **Frontend Dashboard**: **React** with **Vite**, styled using a custom high-performance **Glassmorphism CSS Design System** (Outfit/Inter typography, responsive layouts, neon status pills, and interactive components).
+- **Relational Database**: **PostgreSQL** configured with row-level transaction safety.
+- **Containerization**: **Docker** & **Docker Compose** multi-stage orchestrations.
+
+---
+
+## ✨ Features & Business Rules Implemented
+
+1. **Unique SKUs**: Backend checks and locks unique product Stock Keeping Units.
+2. **Unique Customer Emails**: Prevents profile overlap by validating and checking duplicate emails.
+3. **Atomic Stock Decrement & Transaction Rollback**:
+   - Order creations perform atomic updates inside a SQLAlchemy transaction using `with_for_update()` row-locking.
+   - If stock for *any* requested item is insufficient, the transaction completely rolls back (ACID compliant), preventing orphan rows or negative inventory numbers.
+4. **Dashboard Analytics**: Shows live Revenue, Order volumes, Catalog sizes, and dynamic Low-Stock Restock alerts.
+5. **Interactive Multi-Item Order Creator**: Split-screen invoice composer showing active stock, live item subtotals, overall cart calculations, and proactive warning notices if requested quantity exceeds stock.
+
+---
+
+## 🚀 Quick Start with Docker Compose (Recommended)
+
+To boot the entire stack (PostgreSQL database, FastAPI backend, and React/Nginx frontend) automatically:
+
+1. **Clone/Move into the workspace directory**:
+   ```bash
+   cd "Inventory & Order Management System "
+   ```
+
+2. **Launch all services**:
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Access the Applications**:
+   - **Interactive Frontend UI**: Open [http://localhost](http://localhost) in your browser.
+   - **FastAPI Backend Root**: Open [http://localhost:8000](http://localhost:8000).
+   - **Auto-Generated API Docs**: Browse [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger UI).
+
+---
+
+## 🛠️ Manual Development Setup (No Docker)
+
+If you prefer to run services manually for debugging:
+
+### 1. Backend Service (FastAPI)
+1. Navigate to `/backend` directory:
+   ```bash
+   cd backend
+   ```
+2. Create a virtual environment and activate it:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Create a `.env` file under `/backend` or set environment variable:
+   ```bash
+   # Use SQLite as fallback if PostgreSQL is not installed locally
+   export DATABASE_URL="sqlite:///./inventory.db"
+   ```
+5. Run the development server:
+   ```bash
+   uvicorn app.main:app --reload --port 8000
+   ```
+
+### 2. Frontend Service (React + Vite)
+1. Navigate to `/frontend` directory:
+   ```bash
+   cd ../frontend
+   ```
+2. Install npm packages:
+   ```bash
+   npm install
+   ```
+3. Boot the Vite local dev server:
+   ```bash
+   npm run dev
+   ```
+4. Open the development link: [http://localhost:5173](http://localhost:5173).
+
+---
+
+## ☁️ Production Deployment Playbook (Free Hosting)
+
+To submit the public links requested in the assessment, deploy using the following free platforms:
+
+### 1. Database: Host on Supabase or Neon (Free PostgreSQL)
+1. Create a free account on [Supabase](https://supabase.com) or [Neon](https://neon.tech).
+2. Create a new PostgreSQL database project.
+3. Grab the **Connection String** (`postgresql://...`). Make sure to use the connection pooler string (usually on port `5432` or transaction pooler `6543`).
+
+### 2. Backend API: Host on Render or Railway (Free Python hosting)
+1. Create an account on [Render](https://render.com).
+2. Create a new **Web Service** and link your GitHub Repository.
+3. Set the build parameters:
+   - **Runtime**: `Python` or choose `Docker` (Render automatically builds our `backend/Dockerfile` if you specify it!).
+   - **Build Command**: `pip install -r requirements.txt` (if choosing Python environment).
+   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT` (if choosing Python environment).
+4. Add the following **Environment Variables** in Render:
+   - `DATABASE_URL`: Set to your Supabase/Neon connection string.
+   - `CORS_ORIGINS`: Set to your production frontend URL (e.g. `https://your-app.vercel.app` or `https://your-app.onrender.com`).
+
+### 3. Frontend Dashboard: Host on Render, Vercel, or Netlify
+1. Create a Web Service on Render or Vercel.
+2. Link your repository, specifying the root directory as `frontend`.
+3. Set the build parameters:
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `dist`
+4. Add the following **Environment Variable** at build-time:
+   - `VITE_API_URL`: Set to your public backend URL generated by Render/Railway (e.g. `https://your-api.onrender.com/api`).
+5. **SPA Rewrites Rule (Vercel/Netlify)**: Ensure routing fallbacks are configured so page refreshes don't return 404. Vercel/Netlify do this automatically; for Render, configure a redirect rule from `/*` to `/index.html` with Status `200 (Rewrite)`.
+
+---
+
+## 🐳 Docker Hub Image Publishing Guide
+To generate the **Docker Hub Image Link** requested:
+1. Log in to Docker from your terminal:
+   ```bash
+   docker login
+   ```
+2. Build and tag the backend container:
+   ```bash
+   docker build -t your-dockerhub-username/inventory-backend:latest ./backend
+   ```
+3. Push the image to Docker Hub:
+   ```bash
+   docker push your-dockerhub-username/inventory-backend:latest
+   ```
+4. Copy the image link: `https://hub.docker.com/r/your-dockerhub-username/inventory-backend` and paste it in the submission form!
