@@ -1,5 +1,9 @@
 // API Client for Inventory & Order Management System
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+let API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+// Safely normalize URL so it always ends with "/api" even if configured without it in Vercel
+if (API_BASE_URL && !API_BASE_URL.endsWith("/api") && !API_BASE_URL.endsWith("/api/")) {
+    API_BASE_URL = API_BASE_URL.endsWith("/") ? `${API_BASE_URL}api` : `${API_BASE_URL}/api`;
+}
 
 async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
