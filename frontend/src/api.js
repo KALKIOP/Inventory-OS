@@ -10,22 +10,38 @@ async function request(endpoint, options = {}) {
     
     // Set headers
     const headers = {
-        "Content-Type": "application/json",
         ...options.headers,
     };
+
+    // Attach JWT Authorization Token if available
+    const token = localStorage.getItem("token");
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Only default to JSON content-type if not already specified and not sending form-url-encoded URLSearchParams
+    if (!headers["Content-Type"] && !(options.body instanceof URLSearchParams)) {
+        headers["Content-Type"] = "application/json";
+    }
 
     const config = {
         ...options,
         headers,
     };
 
-    if (config.body && typeof config.body === "object") {
+    if (config.body && typeof config.body === "object" && !(config.body instanceof URLSearchParams)) {
         config.body = JSON.stringify(config.body);
     }
 
     try {
         const response = await fetch(url, config);
         
+        // Clear token on 401 Unauthorized (invalid session)
+        if (response.status === 401 && endpoint !== "/auth/login") {
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+
         // Handle no content responses (e.g. DELETE or 204)
         if (response.status === 204) {
             return null;
@@ -47,6 +63,23 @@ async function request(endpoint, options = {}) {
 }
 
 export const api = {
+    auth: {
+        register: (username, email, password) => 
+            request("/auth/register", { 
+                method: "POST", 
+                body: { username, email, password } 
+            }),
+        login: (username, password) => {
+            const formData = new URLSearchParams();
+            formData.append("username", username);
+            formData.append("password", password);
+            return request("/auth/login", { 
+                method: "POST", 
+                body: formData 
+            });
+        },
+        me: () => request("/auth/me"),
+    },
     products: {
         list: () => request("/products/"),
         get: (id) => request(`/products/${id}`),
@@ -67,3 +100,4 @@ export const api = {
         create: (data) => request("/orders/", { method: "POST", body: data }),
     }
 };
+

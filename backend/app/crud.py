@@ -1,6 +1,44 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from passlib.context import CryptContext
 from . import models, schemas
+
+# Setup secure password hashing context using bcrypt
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+# ==========================================
+# USER & AUTH CRUD
+# ==========================================
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
+def get_user_by_email(db: Session, email: str):
+    return db.query(models.User).filter(models.User.email == email).first()
+
+def create_user(db: Session, user: schemas.UserCreate):
+    # Enforce Unique checks
+    if get_user_by_username(db, user.username):
+        raise ValueError("Username is already taken.")
+    if get_user_by_email(db, user.email):
+        raise ValueError("Email is already registered.")
+        
+    hashed_pwd = get_password_hash(user.password)
+    db_user = models.User(
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_pwd
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 
 # ==========================================
 # PRODUCT CRUD

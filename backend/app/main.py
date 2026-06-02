@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine, Base
-from .routers import products, customers, orders
+from .routers import products, customers, orders, auth
 
 # Automatically create all database tables
 # In production with heavy schema migrations, tools like Alembic are preferred,
@@ -25,9 +25,11 @@ app.add_middleware(
 )
 
 # Mount Routers
+app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(products.router, prefix=settings.API_V1_STR)
 app.include_router(customers.router, prefix=settings.API_V1_STR)
 app.include_router(orders.router, prefix=settings.API_V1_STR)
+
 
 @app.get("/")
 def root_endpoint():
