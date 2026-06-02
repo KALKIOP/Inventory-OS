@@ -16,8 +16,8 @@ class Settings:
     )
     
     # CORS Configuration
-    # Accepts a comma-separated list of origins in the environment variable
-    cors_origins_str = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
+    # Accepts a comma-separated list of origins in the environment variable. Default to "*" for ease of public hosting deployment.
+    cors_origins_str = os.getenv("CORS_ORIGINS", "*")
     CORS_ORIGINS: list[str] = [origin.strip() for origin in cors_origins_str.split(",") if origin.strip()]
 
 settings = Settings()
