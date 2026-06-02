@@ -1,4 +1,9 @@
 # 📦 Enterprise Inventory & Order Management System
+🔗 Important Links:
+
+🌐 Live Website : https://inventory-os-two.vercel.app/
+
+💻 GitHub Repository: https://github.com/KALKIOP/Inventory-OS
 
 A production-grade, highly aesthetic full-stack application built with:
 - **Backend API**: **FastAPI (Python)** using **SQLAlchemy ORM** and **Pydantic v2** validation.
